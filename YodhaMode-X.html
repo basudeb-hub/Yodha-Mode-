@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wingo Predictor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            border-top: 5px solid #4a6cfa;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .title {
+            font-size: 2.8rem;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #1a2980, #26d0ce);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            font-weight: 800;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            color: #4a6cfa;
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin-top: -5px;
+            letter-spacing: 1px;
+        }
+        
+        .prediction-panel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(74, 108, 250, 0.15);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .digits-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .digit-input {
+            width: 70px;
+            height: 70px;
+            text-align: center;
+            font-size: 2.2rem;
+            font-weight: bold;
+            background: #f8f9fa;
+            border: 2px solid #4a6cfa;
+            border-radius: 12px;
+            color: #1a2980;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        
+        .digit-input:focus {
+            border-color: #26d0ce;
+            box-shadow: 0 0 0 4px rgba(38, 208, 206, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .result-display {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            transition: all 0.5s ease;
+            box-shadow: 0 0 30px rgba(74, 108, 250, 0.15);
+            position: relative;
+            overflow: hidden;
+            margin: 20px auto;
+            background: #f8f9fa;
+            border: 3px solid #e9ecef;
+        }
+        
+        .result-display::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: conic-gradient(transparent, #4a6cfa, transparent);
+            animation: rotate 3s linear infinite;
+            z-index: -1;
+        }
+        
+        .result-display::after {
+            content: '';
+            position: absolute;
+            inset: 3px;
+            background: white;
+            border-radius: 50%;
+            z-index: -1;
+        }
+        
+        .small {
+            color: #28a745;
+        }
+        
+        .big {
+            color: #dc3545;
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 15px;
+        }
+        
+        .btn {
+            background: linear-gradient(90deg, #4a6cfa, #26d0ce);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(74, 108, 250, 0.3);
+            font-weight: bold;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(74, 108, 250, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .btn-reset {
+            background: linear-gradient(90deg, #6c757d, #adb5bd);
+        }
+        
+        .result-explanation {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: #6c757d;
+            border-left: 4px solid #4a6cfa;
+        }
+        
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        
+        .feature {
+            background: rgba(74, 108, 250, 0.1);
+            border-radius: 10px;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #4a6cfa;
+            font-weight: 500;
+        }
+        
+        .feature i {
+            color: #26d0ce;
+        }
+        
+        .credit {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #6c757d;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(74, 108, 250, 0.2);
+        }
+        
+        .credit a {
+            color: #4a6cfa;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .credit a:hover {
+            color: #26d0ce;
+            text-decoration: underline;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .digit-input {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+            
+            .result-display {
+                width: 140px;
+                height: 140px;
+                font-size: 2.2rem;
+            }
+            
+            .title {
+                font-size: 2.2rem;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .digit-input {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8rem;
+            }
+            
+            .result-display {
+                width: 120px;
+                height: 120px;
+                font-size: 1.8rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .features {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="title">Wingo Predictor</h1>
+            <div class="subtitle">Big/Small Number Prediction</div>
+        </header>
+        
+        <div class="prediction-panel">
+            <div class="digits-container">
+                <input type="number" min="0" max="9" class="digit-input" id="digit1" placeholder="0">
+                <input type="number" min="0" max="9" class="digit-input" id="digit2" placeholder="0">
+                <input type="number" min="0" max="9" class="digit-input" id="digit3" placeholder="0">
+                <input type="number" min="0" max="9" class="digit-input" id="digit4" placeholder="0">
+            </div>
+            
+            <div class="result-display" id="result">
+                ?
+            </div>
+            
+            <div class="btn-container">
+                <button class="btn" id="predict-btn">
+                    <i class="fas fa-bolt"></i> PREDICT
+                </button>
+                <button class="btn btn-reset" id="reset-btn">
+                    <i class="fas fa-redo"></i> RESET
+                </button>
+            </div>
+            
+            <div class="result-explanation">
+                <i class="fas fa-info-circle"></i> Enter 4 digits (0-9) and click PREDICT to get Big/Small result
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <i class="fas fa-check-circle"></i> Algorithm-based prediction
+            </div>
+            <div class="feature">
+                <i class="fas fa-check-circle"></i> Simple & intuitive interface
+            </div>
+            <div class="feature">
+                <i class="fas fa-check-circle"></i> Mobile responsive
+            </div>
+        </div>
+        
+        <div class="credit">
+            Powered by YodhaMode Owner 👉 <a href="https://t.me/KarmYodha7" target="_blank">@KarmYodha7</a>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const digitInputs = document.querySelectorAll('.digit-input');
+            const predictBtn = document.getElementById('predict-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const resultDisplay = document.getElementById('result');
+            
+            // Focus first input
+            digitInputs[0].focus();
+            
+            // Add input validation
+            digitInputs.forEach(input => {
+                input.addEventListener('input', function() {
+                    if (this.value.length > 1) {
+                        this.value = this.value.slice(0, 1);
+                    }
+                    if (this.value > 9) this.value = 9;
+                    if (this.value < 0) this.value = 0;
+                    
+                    // Move to next input
+                    if (this.value !== '' && this.id !== 'digit4') {
+                        const nextIndex = parseInt(this.id.replace('digit', '')) + 1;
+                        document.getElementById(`digit${nextIndex}`).focus();
+                    }
+                });
+                
+                // Allow backspace to move to previous input
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && this.value === '' && this.id !== 'digit1') {
+                        e.preventDefault();
+                        const prevIndex = parseInt(this.id.replace('digit', '')) - 1;
+                        document.getElementById(`digit${prevIndex}`).focus();
+                    }
+                    
+                    // Allow Enter to trigger prediction
+                    if (e.key === 'Enter') {
+                        predictBtn.click();
+                    }
+                });
+            });
+            
+            // Reset button
+            resetBtn.addEventListener('click', function() {
+                digitInputs.forEach(input => {
+                    input.value = '';
+                    input.style.borderColor = '#4a6cfa';
+                });
+                resultDisplay.textContent = '?';
+                resultDisplay.className = 'result-display';
+                digitInputs[0].focus();
+            });
+            
+            // Prediction function
+            predictBtn.addEventListener('click', function() {
+                // Get all digit values
+                const digits = [];
+                let isValid = true;
+                
+                digitInputs.forEach((input, index) => {
+                    const value = parseInt(input.value);
+                    if (isNaN(value)) {
+                        input.style.borderColor = '#dc3545';
+                        isValid = false;
+                    } else {
+                        digits[index] = value;
+                        input.style.borderColor = '#4a6cfa';
+                    }
+                });
+                
+                if (!isValid) {
+                    resultDisplay.textContent = '?';
+                    resultDisplay.className = 'result-display';
+                    return;
+                }
+                
+                // Perform calculation with 4 digits
+                const group1 = digits[0] + digits[2]; // Positions 1 and 3
+                let reduced1 = group1;
+                while (reduced1 >= 9) {
+                    reduced1 -= 9;
+                }
+                
+                const group2 = digits[1] + digits[3]; // Positions 2 and 4
+                
+                let result = reduced1 - group2;
+                // Normalize to 0-9 range
+                if (result < 0) {
+                    result += 10;
+                }
+                if (result > 9) {
+                    result -= 10;
+                }
+                
+                // Determine prediction
+                const prediction = result <= 4 ? 'Small' : 'Big';
+                
+                // Display result with animation
+                resultDisplay.textContent = prediction;
+                resultDisplay.className = 'result-display ' + prediction.toLowerCase();
+                
+                // Add animation effect
+                resultDisplay.style.transform = 'scale(1.1)';
+                setTimeout(() => {
+                    resultDisplay.style.transform = 'scale(1)';
+                }, 300);
+            });
+        });
+    </script>
+</body>
+</html>
